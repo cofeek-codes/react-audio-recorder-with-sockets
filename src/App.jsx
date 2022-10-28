@@ -5,7 +5,6 @@ function App() {
 	let [audioURL, isRecording, startRecording, stopRecording] = useRecorder()
 	return (
 		<div className='App'>
-			<audio src={audioURL} autoPlay={true} />
 			<button onClick={startRecording} disabled={isRecording}>
 				start recording
 			</button>

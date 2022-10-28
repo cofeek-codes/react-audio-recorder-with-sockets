@@ -6,6 +6,8 @@ const useRecorder = () => {
 	const [isRecording, setIsRecording] = useState(false)
 	const [recorder, setRecorder] = useState(null)
 	const socket = io('http://localhost:4200')
+
+	const audioContext = new AudioContext()
 	useEffect(() => {
 		// sockets
 		socket.on('connect', () => {
@@ -15,8 +17,15 @@ const useRecorder = () => {
 			console.log('speak on client')
 			console.log(data)
 			let blob = new Blob([data], { type: 'audio/webm' })
-			setAudioURL(URL.createObjectURL(blob))
-			console.log(audioURL)
+			let src = audioContext.createBufferSource()
+			blob.arrayBuffer().then(buf => {
+				audioContext.decodeAudioData(buf).then(audioBuf => {
+					src.buffer = audioBuf
+				})
+			})
+
+			src.connect(audioContext.destination)
+			src.start(0)
 		})
 		// sockets
 		// Lazily obtain recorder first time we're recording.
@@ -36,7 +45,6 @@ const useRecorder = () => {
 
 		// Obtain the audio when ready.
 		const handleData = e => {
-			// setAudioURL(URL.createObjectURL(e.data))
 			socket.emit('speak', e.data)
 		}
 
